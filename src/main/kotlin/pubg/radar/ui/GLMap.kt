@@ -422,30 +422,64 @@ class GLMap: InputAdapter(), ApplicationListener, GameListener {
           if (finalColor.a == 0f)
             finalColor.set(
                 when {
-                  "98k" in items || "m416" in items || "Choke" in items || "scar" in items -> rareWeaponColor
+                  "m416" in items || "akm" in items || "scar" in items -> rareWeaponColor
+                  "98k" in items || "mini" in items || "sks" in items -> sniperColor
+                  "Suppressor" in items -> suppressorColor
                   "armor3" in items || "helmet3" in items -> rareArmorColor
                   "4x" in items || "8x" in items -> rareScopeColor
                   "Extended" in items || "Compensator" in items -> rareAttachColor
                   "heal" in items || "drink" in items -> healItemColor
                   else -> normalItemColor
                 })
-          
-          val rare = when (finalColor) {
-            rareWeaponColor, rareArmorColor, rareScopeColor, rareAttachColor -> true
+
+          val epic = when (finalColor) {
+            sniperColor, suppressorColor, rareScopeColor -> true
             else -> false
           }
+          val rare = when (finalColor) {
+            rareWeaponColor, rareArmorColor -> true
+            else -> false
+          }
+          val normal = when (finalColor) {
+            /*rareAttachColor, */healItemColor -> true
+            else ->false
+          }
+
           val backgroundRadius = (itemRadius + 50f)
           val radius = itemRadius
-          if (rare) {
-            color = BLACK
-            rect(x - backgroundRadius, y - backgroundRadius, backgroundRadius * 2, backgroundRadius * 2)
-            color = finalColor
-            rect(x - radius, y - radius, radius * 2, radius * 2)
-          } else {
-            color = BLACK
-            circle(x, y, backgroundRadius, 10)
-            color = finalColor
-            circle(x, y, radius, 10)
+
+          val triBackRadius = backgroundRadius * 1.5f
+          val triRadius = radius * 1.5f
+
+          when {
+            epic -> {
+              color = BLACK
+              triangle(x, y - triBackRadius,
+                      x - triBackRadius * 0.866f, y + triBackRadius * 0.5f,
+                      x + triBackRadius * 0.866f, y + triBackRadius * 0.5f)
+              color = finalColor
+              triangle(x, y - triRadius,
+                      x - triRadius * 0.866f, y + triRadius * 0.5f,
+                      x + triRadius * 0.866f, y + triRadius * 0.5f)
+            }
+            rare -> {
+              color = BLACK
+              rect(x - backgroundRadius,
+                      y - backgroundRadius,
+                      backgroundRadius * 2,
+                      backgroundRadius * 2)
+              color = finalColor
+              rect(x - radius, y - radius, radius * 2, radius * 2)
+            }
+            normal -> {
+              color = BLACK
+              circle(x, y, backgroundRadius * 0.9f, 10)
+              color = finalColor
+              circle(x, y, radius * 0.9f, 10)
+            }
+            else -> {
+              // Do nothing
+            }
           }
         }
   }

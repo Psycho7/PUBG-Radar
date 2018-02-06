@@ -46,7 +46,8 @@ class Item {
             "SCAR-L" to "scar",
             "AK47" to "ak",
             "SKS" to "sks",
-            "Grenade" to "grenade"),
+            "Grenade" to "grenade",
+            "Mini14" to "mini"),
         "Ammo" to mapOf(
             "556mm" to "556",
             "762mm" to "762"),
