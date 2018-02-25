@@ -398,8 +398,8 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
             //Draw Corpse Icon
             corpseLocation.values.forEach {
                 //droppedItemLocation
-                val (x,y) = it
-                val (sx,sy) = Vector2(x,y).mapToWindow()
+                val (x, y) = it
+                val (sx, sy) = Vector2(x, y).mapToWindow()
                 val syFix = windowHeight - sy
                 val iconScale = 2f / camera.zoom
 
