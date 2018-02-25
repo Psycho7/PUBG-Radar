@@ -18,7 +18,6 @@ const val vehicle6Width = 1600f
 const val directionRadius = 16000f
 const val airDropRadius = 4000f
 const val corpseRadius = 300f
-const val itemRadius = 300f
 const val visionRadius = mapWidth / 8
 const val fov = 90f
 
@@ -39,14 +38,6 @@ val boatColor = Color(1f, 0.49f, 0f, 0.9f)
 val planeColor = Color(0.93f, 0.90f, 0f, 1.0f)
 val parachuteColor = Color(0.94f, 1.0f, 1.0f, 1f)
 val playerColor = Color.RED!!
-val normalItemColor = Color(0.87f, 0.0f, 1.0f, 1f)
-val rareScopeColor = Color(1.0f, 0.94f, 0.0f, 1.0f)         // Yellow Triangle
-val rareArmorColor = Color(0f, 0.0f, 0.7f, 1.0f)            // Blue Rectangle
-val rareWeaponColor = Color(0.72f, 0.43f, 0.16f, 1.0f)      // Brown Rectangle
-val sniperColor = Color(1.0f, 0.01f, 0.24f, 1.0f)           // Red Triangle
-val rareAttachColor = Color(0.31f, 0.51f, 0.71f, 1.0f)      // Light Blue Circle
-val suppressorColor = Color(0.89f, 0.85f, 0.79f, 1.0f)      // White Triangle
-val healItemColor = Color(0.56f, 0.93f, 0.56f, 1.0f)        // Green Circle
 val sightColor = Color(1f, 1f, 1f, 0.5f)
 
 val aimLineColor = Color(0f, 0f, 1f, 1f)
