@@ -106,10 +106,10 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
     fun show() {
         val config = Lwjgl3ApplicationConfiguration()
         config.setTitle("[${targetAddr.hostAddress} ${sniffOption.name}] - PUBG Radar")
-        config.useOpenGL3(true, 3, 2)
+        config.useOpenGL3(false, 3, 2)
         config.setWindowedMode(800, 800)
         config.setResizable(true)
-        config.setBackBufferConfig(8, 8, 8, 8, 16, 0, 2)
+        config.setBackBufferConfig(8, 8, 8, 8, 16, 0, 8)
         Lwjgl3Application(this, config)
     }
 
