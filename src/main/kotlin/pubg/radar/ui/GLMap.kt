@@ -120,6 +120,7 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
     private lateinit var mapTiles: MutableMap<String, MutableMap<String, MutableMap<String, Texture>>>
     private lateinit var iconImages: Icons
     private lateinit var alive: Texture
+    private lateinit var corpseboximage: Texture
     private lateinit var teamsalive: Texture
     private lateinit var largeFont: BitmapFont
     private lateinit var littleFont: BitmapFont
@@ -220,6 +221,7 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
         itemCamera = OrthographicCamera(initialWindowWidth, initialWindowWidth)
         fontCamera = OrthographicCamera(initialWindowWidth, initialWindowWidth)
         alarmSound = Gdx.audio.newSound(Gdx.files.internal("Alarm.wav"))
+        corpseboximage = Texture(Gdx.files.internal("icons/box.png"))
         iconImages = Icons(Texture(Gdx.files.internal("item-sprites.png")), 64)
         mapErangelTiles = mutableMapOf()
         mapMiramarTiles = mutableMapOf()
@@ -391,6 +393,21 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
                             }
                         }
                     }
+            //Draw Corpse Icon
+            corpseLocation.values.forEach {
+                //droppedItemLocation
+                val (x,y) = it
+                val (sx,sy) = Vector2(x,y).mapToWindow()
+                val syFix = windowHeight - sy
+                val iconScale = 2f / camera.zoom
+
+                //println(sx + syFix)
+                //spriteBatch.draw(corpseboximage, sx - 16, syFix - 16)
+
+                spriteBatch.draw(corpseboximage, sx - iconScale / 2, syFix + iconScale / 2, iconScale, -iconScale,
+                        0, 0, 32, 32,
+                        false, true)
+            }
         }
 
         val zoom = camera.zoom
@@ -409,7 +426,7 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
             drawPlayer(LIME, tuple4(null, selfX, selfY, selfDir.angle()))
             // drawItem()
             drawAirDrop(zoom)
-            drawCorpse()
+
             drawAPawn(typeLocation, selfX, selfY, zoom, currentTime)
         }
 
@@ -530,18 +547,6 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
                     return
                 }
             }
-        }
-    }
-
-    private fun ShapeRenderer.drawCorpse() {
-        corpseLocation.values.forEach {
-            val (x, y) = it
-            val backgroundRadius = (corpseRadius + 50f)
-            val radius = corpseRadius
-            color = BLACK
-            rect(x - backgroundRadius, y - backgroundRadius, backgroundRadius * 2, backgroundRadius * 2)
-            color = corpseColor
-            rect(x - radius, y - radius, radius * 2, radius * 2)
         }
     }
 
@@ -727,6 +732,7 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
         largeFont.dispose()
         littleFont.dispose()
         alive.dispose()
+        corpseboximage.dispose()
         iconImages.iconSheet.dispose()
 
         var cur = 0
