@@ -1,7 +1,25 @@
 # PUBG-Radar
-PUBG-Radar by sniffering udp packet
+
+This version runs without the spoofing shit in a VM.
+
+
+###Online Mode:
+
+
+`java -jar target\pubg-radar-1.0-SNAPSHOT-jar-with-dependencies.jar 192.168.1.70 PortFilter 192.168.1.67`
+
+
+
+###Offline Mode:
+
+You can replay a PCAP file in offline mode:
+
+`java -jar target\pubg-radar-1.0-SNAPSHOT-jar-with-dependencies.jar 192.168.1.70 PortFilter 192.168.1.67 Offline`
+
+
 
 Written in Kotlin
 
 # Build
 Using [maven](https://maven.apache.org/)
+
