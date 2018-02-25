@@ -19,10 +19,14 @@ You can replay a PCAP file in offline mode:
 
 
 
-# Build
+## Build
 Using [maven](https://maven.apache.org/) or [JetBrains](https://www.jetbrains.com/idea/)
 
-#
+## Run
 
 Using a VM that supports OpenGL3.2 or on another machine, You shouldn't be using this on your gaming PC.
+
+You need to install JRE8 not JRE9.
+
+
 
