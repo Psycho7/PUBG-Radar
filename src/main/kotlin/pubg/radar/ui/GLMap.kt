@@ -121,6 +121,7 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
     private lateinit var iconImages: Icons
     private lateinit var alive: Texture
     private lateinit var corpseboximage: Texture
+    private lateinit var airdropimage: Texture
     private lateinit var teamsalive: Texture
     private lateinit var largeFont: BitmapFont
     private lateinit var littleFont: BitmapFont
@@ -222,6 +223,7 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
         fontCamera = OrthographicCamera(initialWindowWidth, initialWindowWidth)
         alarmSound = Gdx.audio.newSound(Gdx.files.internal("Alarm.wav"))
         corpseboximage = Texture(Gdx.files.internal("icons/box.png"))
+        airdropimage = Texture(Gdx.files.internal("icons/airdrop.png"))
         iconImages = Icons(Texture(Gdx.files.internal("item-sprites.png")), 64)
         mapErangelTiles = mutableMapOf()
         mapMiramarTiles = mutableMapOf()
@@ -401,12 +403,16 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
                 val syFix = windowHeight - sy
                 val iconScale = 2f / camera.zoom
 
-                //println(sx + syFix)
-                //spriteBatch.draw(corpseboximage, sx - 16, syFix - 16)
-
                 spriteBatch.draw(corpseboximage, sx - iconScale / 2, syFix + iconScale / 2, iconScale, -iconScale,
                         0, 0, 32, 32,
                         false, true)
+            }
+            //Draw Airdrop Icon
+            airDropLocation.values.forEach {
+                val (x, y) = it
+                val (sx, sy) = Vector2(x, y).mapToWindow()
+                val syFix = windowHeight - sy
+                spriteBatch.draw(airdropimage, sx - 16, syFix - 16)
             }
         }
 
@@ -425,7 +431,6 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
             //draw self
             drawPlayer(LIME, tuple4(null, selfX, selfY, selfDir.angle()))
             // drawItem()
-            drawAirDrop(zoom)
 
             drawAPawn(typeLocation, selfX, selfY, zoom, currentTime)
         }
@@ -547,20 +552,6 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
                     return
                 }
             }
-        }
-    }
-
-    private fun ShapeRenderer.drawAirDrop(zoom: Float) {
-        airDropLocation.values.forEach {
-            val (x, y) = it
-            val backgroundRadius = (airDropRadius + 2000) * zoom
-            val airDropRadius = airDropRadius * zoom
-            color = BLACK
-            rect(x - backgroundRadius, y - backgroundRadius, backgroundRadius * 2, backgroundRadius * 2)
-            color = BLUE
-            rect(x, y - airDropRadius, airDropRadius, airDropRadius * 2)
-            color = RED
-            rect(x - airDropRadius, y - airDropRadius, airDropRadius, airDropRadius * 2)
         }
     }
 
@@ -733,6 +724,7 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
         littleFont.dispose()
         alive.dispose()
         corpseboximage.dispose()
+        airdropimage.dispose()
         iconImages.iconSheet.dispose()
 
         var cur = 0
