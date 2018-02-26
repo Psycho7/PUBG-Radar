@@ -3,6 +3,10 @@ package pubg.radar.ui
 import com.badlogic.gdx.ApplicationListener
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.Input.Buttons.*
+import com.badlogic.gdx.Input.Keys.NUM_1
+import com.badlogic.gdx.Input.Keys.NUM_2
+import com.badlogic.gdx.Input.Keys.NUM_3
+import com.badlogic.gdx.Input.Keys.NUM_4
 import com.badlogic.gdx.InputAdapter
 import com.badlogic.gdx.audio.Sound
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Application
@@ -47,7 +51,6 @@ import pubg.radar.struct.NetworkGUID
 import pubg.radar.struct.cmd.ActorCMD.actorWithPlayerState
 import pubg.radar.struct.cmd.ActorCMD.playerStateToActor
 import pubg.radar.struct.cmd.GameStateCMD.ElapsedWarningDuration
-import pubg.radar.struct.cmd.GameStateCMD.MatchElapsedMinutes
 import pubg.radar.struct.cmd.GameStateCMD.NumAlivePlayers
 import pubg.radar.struct.cmd.GameStateCMD.NumAliveTeams
 import pubg.radar.struct.cmd.GameStateCMD.PoisonGasWarningPosition
@@ -119,10 +122,10 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
     private lateinit var mapMiramarTiles: MutableMap<String, MutableMap<String, MutableMap<String, Texture>>>
     private lateinit var mapTiles: MutableMap<String, MutableMap<String, MutableMap<String, Texture>>>
     private lateinit var iconImages: Icons
-    private lateinit var alive: Texture
+    // private lateinit var alive: Texture
     private lateinit var corpseboximage: Texture
     private lateinit var airdropimage: Texture
-    private lateinit var teamsalive: Texture
+    // private lateinit var teamsalive: Texture
     private lateinit var largeFont: BitmapFont
     private lateinit var littleFont: BitmapFont
     private lateinit var nameFont: BitmapFont
@@ -131,6 +134,12 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
     private lateinit var itemCamera: OrthographicCamera
     private lateinit var camera: OrthographicCamera
     private lateinit var alarmSound: Sound
+    private lateinit var hub_panel: Texture
+    private lateinit var hub_panel_blank: Texture
+    private lateinit var hubFont: BitmapFont
+    private lateinit var hubFontShadow: BitmapFont
+    private lateinit var espFont: BitmapFont
+    private lateinit var espFontShadow: BitmapFont
 
 
     private val tileZooms = listOf("256", "512", "1024", "2048"/*, "4096"*/)
@@ -144,7 +153,14 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
     private val aimStartTime = HashMap<NetworkGUID, Long>()
     private val attackLineStartTime = LinkedList<Triple<NetworkGUID, NetworkGUID, Long>>()
     private val pinLocation = Vector2()
-
+    var filterWeapon = 1
+    var filterAttach = -1
+    var filterLvl2 = -1
+    var filterScope = -1
+    var ScopesToFilter = arrayListOf("")
+    var WeaponsToFilter = arrayListOf("")
+    var AttachToFilter = arrayListOf("")
+    var Level2Filter = arrayListOf("")
     private var dragging = false
     private var prevScreenX = -1f
     private var prevScreenY = -1f
@@ -186,6 +202,16 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
         return false
     }
 
+    override fun keyDown(keycode: Int): Boolean {
+        when (keycode) {
+            NUM_1 -> filterWeapon = filterWeapon * -1
+            NUM_2 -> filterAttach = filterAttach * -1
+            NUM_3 -> filterLvl2 = filterLvl2 * -1
+            NUM_4 -> filterScope = filterScope * -1
+        }
+        return false
+    }
+
     override fun touchDragged(screenX: Int, screenY: Int, pointer: Int): Boolean {
         if (!dragging) return false
         with(camera) {
@@ -217,14 +243,16 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
             position.set(mapWidth / 2, mapWidth / 2, 0f)
             update()
         }
-        alive = Texture(Gdx.files.internal("images/alive.png"))
-        teamsalive = Texture(Gdx.files.internal("images/teams.png"))
+        //  alive = Texture(Gdx.files.internal("images/alive.png"))
+        // teamsalive = Texture(Gdx.files.internal("images/teams.png"))
         itemCamera = OrthographicCamera(initialWindowWidth, initialWindowWidth)
         fontCamera = OrthographicCamera(initialWindowWidth, initialWindowWidth)
-        alarmSound = Gdx.audio.newSound(Gdx.files.internal("Alarm.wav"))
+        alarmSound = Gdx.audio.newSound(Gdx.files.internal("sounds/Alarm.wav"))
+        hub_panel = Texture(Gdx.files.internal("images/hub_panel.png"))
+        hub_panel_blank = Texture(Gdx.files.internal("images/hub_panel_blank.png"))
         corpseboximage = Texture(Gdx.files.internal("icons/box.png"))
         airdropimage = Texture(Gdx.files.internal("icons/airdrop.png"))
-        iconImages = Icons(Texture(Gdx.files.internal("item-sprites.png")), 64)
+        iconImages = Icons(Texture(Gdx.files.internal("images/item-sprites.png")), 64)
         mapErangelTiles = mutableMapOf()
         mapMiramarTiles = mutableMapOf()
         var cur = 0
@@ -244,23 +272,52 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
             cur++
         }
         mapTiles = mapErangelTiles
-        // map = mapErangel
 
-        val generator = FreeTypeFontGenerator(Gdx.files.internal("GOTHICB.TTF"))
+
+        val generatorHub = FreeTypeFontGenerator(Gdx.files.internal("font/AGENCYFB.TTF"))
+        val paramHub = FreeTypeFontParameter()
+        paramHub.characters = DEFAULT_CHARS
+        paramHub.size = 30
+        paramHub.color = WHITE
+        hubFont = generatorHub.generateFont(paramHub)
+        paramHub.color = Color(1f, 1f, 1f, 0.4f)
+        hubFontShadow = generatorHub.generateFont(paramHub)
+        paramHub.size = 16
+        paramHub.color = WHITE
+        espFont = generatorHub.generateFont(paramHub)
+        paramHub.color = Color(1f, 1f, 1f, 0.2f)
+        espFontShadow = generatorHub.generateFont(paramHub)
+
+
+        val generatorNumber = FreeTypeFontGenerator(Gdx.files.internal("font/NUMBER.TTF"))
+        val paramNumber = FreeTypeFontParameter()
+        paramNumber.characters = DEFAULT_CHARS
+        paramNumber.size = 24
+        paramNumber.color = WHITE
+        largeFont = generatorNumber.generateFont(paramNumber)
+        //   paramNumber.color = Color(0f, 0f, 0f, 0.5f)
+        //  largeFontShadow = generatorNumber.generateFont(paramNumber)
+        // paramNumber.size = 14
+        //  compassFontShadow = generatorNumber.generateFont(paramNumber)
+
+
+        val generator = FreeTypeFontGenerator(Gdx.files.internal("font/GOTHICB.TTF"))
         val param = FreeTypeFontParameter()
-        param.size = 38
         param.characters = DEFAULT_CHARS
+        param.size = 38
         param.color = WHITE
         largeFont = generator.generateFont(param)
-        param.size = 20
+        param.size = 15
         param.color = WHITE
         littleFont = generator.generateFont(param)
         param.color = BLACK
-        param.size = 15
-        nameFont = generator.generateFont(param)
-        param.color = BLACK
         param.size = 10
+        nameFont = generator.generateFont(param)
+        param.color = WHITE
+        param.size = 6
         itemFont = generator.generateFont(param)
+        generatorHub.dispose()
+        generatorNumber.dispose()
         generator.dispose()
     }
 
@@ -333,23 +390,55 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
             }
 
         paint(fontCamera.combined) {
-            littleFont.draw(spriteBatch, "Time Elapsed: ${MatchElapsedMinutes}min \n" /* + "${ElapsedWarningDuration.toInt()} Next BlueZone: ${TotalWarningDuration.toInt()}"*/, 10f, windowHeight - 10f)
 
-            spriteBatch.draw(alive, windowWidth - 150f, windowHeight - 100f)
-            largeFont.draw(spriteBatch, "$NumAlivePlayers", windowWidth - 143f, windowHeight - 24f)
+            // NUMBER PANEL
+            val numText = "$NumAlivePlayers"
+            layout.setText(hubFont, numText)
+            spriteBatch.draw(hub_panel, windowWidth - 130f, windowHeight - 60f)
+            hubFontShadow.draw(spriteBatch, "ALIVE", windowWidth - 85f, windowHeight - 29f)
+            hubFont.draw(spriteBatch, "$NumAlivePlayers", windowWidth - 110f - layout.width / 2, windowHeight - 29f)
 
-            if (NumAliveTeams > 1) {
+            val teamText = "$NumAliveTeams"
+            layout.setText(hubFont, teamText)
+            spriteBatch.draw(hub_panel, windowWidth - 260f, windowHeight - 60f)
+            hubFontShadow.draw(spriteBatch, "TEAM", windowWidth - 215f, windowHeight - 29f)
+            hubFont.draw(spriteBatch, "$NumAliveTeams", windowWidth - 240f - layout.width / 2, windowHeight - 29f)
 
-                spriteBatch.draw(teamsalive, windowWidth - 280f, windowHeight - 100f)
-                largeFont.draw(spriteBatch, "$NumAliveTeams", windowWidth - 273f, windowHeight - 24f)
+            val timeText = "${TotalWarningDuration.toInt() - ElapsedWarningDuration.toInt()}"
+            layout.setText(hubFont, timeText)
+            spriteBatch.draw(hub_panel, windowWidth - 390f, windowHeight - 60f)
+            hubFontShadow.draw(spriteBatch, "SECS", windowWidth - 345f, windowHeight - 29f)
+            hubFont.draw(spriteBatch, "${TotalWarningDuration.toInt() - ElapsedWarningDuration.toInt()}", windowWidth - 370f - layout.width / 2, windowHeight - 29f)
 
-            }
+            // ITEM ESP FILTER PANEL
+            spriteBatch.draw(hub_panel_blank, 30f, windowHeight - 60f)
+
+            if (filterWeapon == 1)
+                espFont.draw(spriteBatch, "WEAPON", 37f, windowHeight - 25f)
+            else
+                espFontShadow.draw(spriteBatch, "WEAPON", 37f, windowHeight - 25f)
+
+            if (filterAttach == 1)
+                espFont.draw(spriteBatch, "ATTACH", 37f, windowHeight - 42f)
+            else
+                espFontShadow.draw(spriteBatch, "ATTACH", 37f, windowHeight - 42f)
+
+            if (filterLvl2 == 1)
+                espFont.draw(spriteBatch, "EQUIP", 92f, windowHeight - 25f)
+            else
+                espFontShadow.draw(spriteBatch, "EQUIP", 92f, windowHeight - 25f)
+
+            if (filterScope == 1)
+                espFont.draw(spriteBatch, "SCOPE", 92f, windowHeight - 42f)
+            else
+                espFontShadow.draw(spriteBatch, "SCOPE", 92f, windowHeight - 42f)
 
             val time = (pinLocation.cpy().sub(selfX, selfY).len() / runSpeed).toInt()
             val (x, y) = pinLocation.mapToWindow()
             littleFont.draw(spriteBatch, "$time", x, windowHeight - y)
             safeZoneHint()
             drawPlayerInfos(typeLocation[Player])
+            val profileText = "Weapon: ${filterWeapon}"
         }
 
         val itemNameDrawBlacklist = arrayListOf(
@@ -364,20 +453,60 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
                 "Sks",
                 "Grenade"
         )
+
+
+        "Upper" to mapOf(
+                "DotSight" to "red-dot",
+                "Aimpoint" to "2x",
+                "Holosight" to "holo",
+                "ACOG" to "4x",
+                "CQBSS" to "8x"
+        )
+
+
+        ScopesToFilter = if (filterScope != 1) {
+            arrayListOf("")
+        } else {
+            arrayListOf("red-dot", "2x", "8x", "4x", "holo", "DotSight")
+        }
+
+        AttachToFilter = if (filterAttach != 1) {
+            arrayListOf("")
+        } else {
+            arrayListOf("AR.Stock","S.Loops","CheekPad","A.Grip","V.Grip","U.Ext","AR.Ext","S.Ext","U.ExtQ","AR.ExtQ","S.ExtQ","Choke","AR.Comp","FH","U.Supp","AR.Supp","S.Supp")
+        }
+
+
+        WeaponsToFilter = if (filterWeapon != 1) {
+            arrayListOf("")
+        } else {
+            arrayListOf("M4","98k","Scar","Ak","Sks","Grenade","Mini","DP28","Ump","Vector","Pan")
+        }
+
+
+        Level2Filter = if (filterLvl2 != 1) {
+            arrayListOf("")
+        } else {
+            arrayListOf("Bag2","Arm2","Helm2")
+        }
+
+
         val iconScale = 1.5f / camera.zoom
         paint(itemCamera.combined) {
             droppedItemLocation.values.asSequence().filter { it.second.isNotEmpty() }
                     .forEach {
                         val (x, y) = it.first
                         val items = it.second
-                        val yOffset = 2
-                        val (sx, sy) = Vector2(x, y + yOffset).mapToWindow()
+                        val (sx, sy) = Vector2(x + 16, y - 16).mapToWindow()
                         val syFix = windowHeight - sy
 
 
                         // println(items)
                         items.forEach {
-                            if (it !in itemNameDrawBlacklist) {
+                            if (it !in WeaponsToFilter) {
+                                if (it !in ScopesToFilter){
+                                    if (it !in AttachToFilter){
+                                        if (it !in Level2Filter){
                                 if (
                                         iconScale > 8 &&
                                         sx > 0 && sx < windowWidth &&
@@ -392,14 +521,14 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
                                     // itemFont.draw(spriteBatch, it, sx, windowHeight - sy - yOffset)
                                 }
                                 // yOffset = yOffset + 2
-                            }
+                            }}}}
                         }
                     }
             //Draw Corpse Icon
             corpseLocation.values.forEach {
                 //droppedItemLocation
                 val (x, y) = it
-                val (sx, sy) = Vector2(x, y).mapToWindow()
+                val (sx, sy) = Vector2(x + 16, y - 16).mapToWindow()
                 val syFix = windowHeight - sy
                 val iconScale = 2f / camera.zoom
 
@@ -567,9 +696,13 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
             query(name)
             if (completedPlayerInfo.containsKey(name)) {
                 val info = completedPlayerInfo[name]!!
-                val desc = "$name($numKills)\n${info.win}/${info.totalPlayed}\n${info.roundMostKill}-${info.killDeathRatio.d(2)}/${info.headshotKillRatio.d(2)}\n$teamNumber"
+                val desc = "$name" /*($numKills)\n" + */
+                // "${info.win}/${info.totalPlayed}\n" +
+                //   "${info.roundMostKill}-${info.killDeathRatio.d(2)}/${info.headshotKillRatio.d(2)}\n$teamNumber"
                 nameFont.draw(spriteBatch, desc, sx + 2, windowHeight - sy - 2)
-            } else nameFont.draw(spriteBatch, "$name($numKills)\n$teamNumber", sx + 2, windowHeight - sy - 2)
+            } else nameFont.draw(spriteBatch, "$name "/* +
+                    "/($numKills)\n$teamNumber*/
+                    , sx + 2, windowHeight - sy - 2)
         }
         val profileText = "${completedPlayerInfo.size}/${completedPlayerInfo.size + pendingPlayerInfo.size}"
         layout.setText(largeFont, profileText)
@@ -664,7 +797,7 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
 
         if (drawSight) {
             color = sightColor
-            arc(x, y, directionRadius, dir - fov / 2, fov, 10)
+            arc(x, y, directionRadius, dir - fov / 2, fov, 6)
         }
     }
 
@@ -722,7 +855,6 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
         nameFont.dispose()
         largeFont.dispose()
         littleFont.dispose()
-        alive.dispose()
         corpseboximage.dispose()
         airdropimage.dispose()
         iconImages.iconSheet.dispose()

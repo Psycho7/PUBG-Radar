@@ -30,7 +30,7 @@ enum class Archetype { //order matters, it affects the order of drawing
             archetype.contains("DroppedItemGroup") -> DroopedItemGroup
             archetype.contains("Aircraft") -> Plane
             archetype.contains("Parachute") -> Parachute
-            archetype.contains(Regex("(bike|buggy|SideCar)", RegexOption.IGNORE_CASE)) -> TwoSeatCar
+            archetype.contains(Regex("(bike|buggy|Sidecart)", RegexOption.IGNORE_CASE)) -> TwoSeatCar
             archetype.contains(Regex("(dacia|uaz|pickup)", RegexOption.IGNORE_CASE)) -> FourSeatCar
             archetype.contains("bus", true) -> SixSeatCar
             archetype.contains("van", true) -> SixSeatCar
