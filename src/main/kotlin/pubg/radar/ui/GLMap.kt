@@ -122,10 +122,8 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
     private lateinit var mapMiramarTiles: MutableMap<String, MutableMap<String, MutableMap<String, Texture>>>
     private lateinit var mapTiles: MutableMap<String, MutableMap<String, MutableMap<String, Texture>>>
     private lateinit var iconImages: Icons
-    // private lateinit var alive: Texture
     private lateinit var corpseboximage: Texture
     private lateinit var airdropimage: Texture
-    // private lateinit var teamsalive: Texture
     private lateinit var largeFont: BitmapFont
     private lateinit var littleFont: BitmapFont
     private lateinit var nameFont: BitmapFont
@@ -153,14 +151,14 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
     private val aimStartTime = HashMap<NetworkGUID, Long>()
     private val attackLineStartTime = LinkedList<Triple<NetworkGUID, NetworkGUID, Long>>()
     private val pinLocation = Vector2()
-    var filterWeapon = 1
-    var filterAttach = -1
-    var filterLvl2 = -1
-    var filterScope = -1
-    var ScopesToFilter = arrayListOf("")
-    var WeaponsToFilter = arrayListOf("")
-    var AttachToFilter = arrayListOf("")
-    var Level2Filter = arrayListOf("")
+    private var filterWeapon = 1
+    private var filterAttach = -1
+    private var filterLvl2 = -1
+    private var filterScope = -1
+    private var ScopesToFilter = arrayListOf("")
+    private var WeaponsToFilter = arrayListOf("")
+    private var AttachToFilter = arrayListOf("")
+    private var Level2Filter = arrayListOf("")
     private var dragging = false
     private var prevScreenX = -1f
     private var prevScreenY = -1f
@@ -243,8 +241,6 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
             position.set(mapWidth / 2, mapWidth / 2, 0f)
             update()
         }
-        //  alive = Texture(Gdx.files.internal("images/alive.png"))
-        // teamsalive = Texture(Gdx.files.internal("images/teams.png"))
         itemCamera = OrthographicCamera(initialWindowWidth, initialWindowWidth)
         fontCamera = OrthographicCamera(initialWindowWidth, initialWindowWidth)
         alarmSound = Gdx.audio.newSound(Gdx.files.internal("sounds/Alarm.wav"))
@@ -287,20 +283,12 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
         espFont = generatorHub.generateFont(paramHub)
         paramHub.color = Color(1f, 1f, 1f, 0.2f)
         espFontShadow = generatorHub.generateFont(paramHub)
-
-
         val generatorNumber = FreeTypeFontGenerator(Gdx.files.internal("font/NUMBER.TTF"))
         val paramNumber = FreeTypeFontParameter()
         paramNumber.characters = DEFAULT_CHARS
         paramNumber.size = 24
         paramNumber.color = WHITE
         largeFont = generatorNumber.generateFont(paramNumber)
-        //   paramNumber.color = Color(0f, 0f, 0f, 0.5f)
-        //  largeFontShadow = generatorNumber.generateFont(paramNumber)
-        // paramNumber.size = 14
-        //  compassFontShadow = generatorNumber.generateFont(paramNumber)
-
-
         val generator = FreeTypeFontGenerator(Gdx.files.internal("font/GOTHICB.TTF"))
         val param = FreeTypeFontParameter()
         param.characters = DEFAULT_CHARS
@@ -329,20 +317,18 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
             mapTiles = if (isErangel) mapErangelTiles else mapMiramarTiles
         else return
         val currentTime = System.currentTimeMillis()
-        // selfCoords = Vector2(409600f, 409600f)
+
         val (selfX, selfY) = selfCoords
         val selfDir = Vector2(selfX, selfY).sub(preSelfCoords)
         if (selfDir.len() < 1e-8)
             selfDir.set(preDirection)
 
         //move camera
-        // camera.position.set(selfX, selfY, 0f)
         camera.position.set(selfX + screenOffsetX, selfY + screenOffsetY, 0f)
         camera.update()
         val cameraTileScale = Math.max(windowWidth, windowHeight) / camera.zoom
         val useScale: Int
         useScale = when {
-        //   cameraTileScale > 4096 -> 4
             cameraTileScale > 2048 -> 3
             cameraTileScale > 1024 -> 2
             cameraTileScale > 512 -> 1
@@ -440,28 +426,6 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
             drawPlayerInfos(typeLocation[Player])
             val profileText = "Weapon: ${filterWeapon}"
         }
-
-        val itemNameDrawBlacklist = arrayListOf(
-                "AR.Stock",
-                "S.Loops",
-                "FlashHider",
-                "Choke",
-                "V.Grip",
-                //  "556",
-                "762",
-                "Ak",
-                "Sks",
-                "Grenade"
-        )
-
-
-        "Upper" to mapOf(
-                "DotSight" to "red-dot",
-                "Aimpoint" to "2x",
-                "Holosight" to "holo",
-                "ACOG" to "4x",
-                "CQBSS" to "8x"
-        )
 
 
         ScopesToFilter = if (filterScope != 1) {
@@ -697,8 +661,6 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
             if (completedPlayerInfo.containsKey(name)) {
                 val info = completedPlayerInfo[name]!!
                 val desc = "$name" /*($numKills)\n" + */
-                // "${info.win}/${info.totalPlayed}\n" +
-                //   "${info.roundMostKill}-${info.killDeathRatio.d(2)}/${info.headshotKillRatio.d(2)}\n$teamNumber"
                 nameFont.draw(spriteBatch, desc, sx + 2, windowHeight - sy - 2)
             } else nameFont.draw(spriteBatch, "$name "/* +
                     "/($numKills)\n$teamNumber*/
