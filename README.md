@@ -2,22 +2,35 @@
 
 This version runs without the spoofing shit in a VM.
 
+### Key Kinds
+
+You can't filter meds and level 3 gear
+
+#### Item Filter:
+>NUMPAD_1 -> Filter Weapon
+
+>NUMPAD_2 -> Filter Attachments
+
+>NUMPAD_3 -> Filter Level 2
+
+>NUMPAD_4 -> Filter Scopes
+
+#### Zooms:
+>NUMPAD_7 -> Scouting
+
+>NUMPAD_8 -> Scout/Loot
+
+>NUMPAD_9 -> Looting
 
 ### Online Mode:
 
-
 `java -jar target\pubg-radar-1.0-SNAPSHOT-jar-with-dependencies.jar 192.168.1.70 PortFilter 192.168.1.67`
-
-
 
 ### Offline Mode:
 
 You can replay a PCAP file in offline mode:
 
 `java -jar target\pubg-radar-1.0-SNAPSHOT-jar-with-dependencies.jar 192.168.1.70 PortFilter 192.168.1.67 Offline`
-
-
-
 
 ## Build
 Using [maven](https://maven.apache.org/) or [JetBrains](https://www.jetbrains.com/idea/)
