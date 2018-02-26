@@ -8,16 +8,12 @@ const val initialWindowWidth = 1000f
 const val windowToMapUnit = mapWidth / initialWindowWidth
 
 const val runSpeed = 6.3 * 100//6.3m/s
-const val unit = gridWidth / 8
-const val unit2 = unit / 10
 //1m=100
 const val playerRadius = 4000f
 const val vehicle2Width = 400f
 const val vehicle4Width = 800f
 const val vehicle6Width = 1600f
 const val directionRadius = 16000f
-const val airDropRadius = 4000f
-const val corpseRadius = 300f
 const val visionRadius = mapWidth / 8
 const val fov = 90f
 
@@ -32,7 +28,6 @@ const val pinRadius = 4000f
 val teamColor = Color(1f, 1f, 0f, 1f)
 val safeDirectionColor = Color(0.12f, 0.56f, 1f, 0.5f)
 val visionColor = Color(1f, 1f, 1f, 0.1f)
-val corpseColor = Color(1f, 1f, 0f, 1f)
 val carColor = Color(0.12f, 0.56f, 1f, 0.9f)
 val boatColor = Color(1f, 0.49f, 0f, 0.9f)
 val planeColor = Color(0.93f, 0.90f, 0f, 1.0f)

@@ -3,10 +3,13 @@ package pubg.radar.ui
 import com.badlogic.gdx.ApplicationListener
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.Input.Buttons.*
-import com.badlogic.gdx.Input.Keys.NUM_1
-import com.badlogic.gdx.Input.Keys.NUM_2
-import com.badlogic.gdx.Input.Keys.NUM_3
-import com.badlogic.gdx.Input.Keys.NUM_4
+import com.badlogic.gdx.Input.Keys.NUMPAD_1
+import com.badlogic.gdx.Input.Keys.NUMPAD_2
+import com.badlogic.gdx.Input.Keys.NUMPAD_3
+import com.badlogic.gdx.Input.Keys.NUMPAD_4
+import com.badlogic.gdx.Input.Keys.NUMPAD_7
+import com.badlogic.gdx.Input.Keys.NUMPAD_8
+import com.badlogic.gdx.Input.Keys.NUMPAD_9
 import com.badlogic.gdx.InputAdapter
 import com.badlogic.gdx.audio.Sound
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Application
@@ -36,14 +39,10 @@ import pubg.radar.deserializer.channel.ActorChannel.Companion.airDropLocation
 import pubg.radar.deserializer.channel.ActorChannel.Companion.corpseLocation
 import pubg.radar.deserializer.channel.ActorChannel.Companion.droppedItemLocation
 import pubg.radar.deserializer.channel.ActorChannel.Companion.visualActors
-import pubg.radar.http.PlayerProfile.Companion.completedPlayerInfo
-import pubg.radar.http.PlayerProfile.Companion.pendingPlayerInfo
-import pubg.radar.http.PlayerProfile.Companion.query
+import pubg.radar.util.PlayerProfile.Companion.query
 import pubg.radar.sniffer.Sniffer.Companion.preDirection
 import pubg.radar.sniffer.Sniffer.Companion.preSelfCoords
 import pubg.radar.sniffer.Sniffer.Companion.selfCoords
-import pubg.radar.sniffer.Sniffer.Companion.sniffOption
-import pubg.radar.sniffer.Sniffer.Companion.targetAddr
 import pubg.radar.struct.Actor
 import pubg.radar.struct.Archetype
 import pubg.radar.struct.Archetype.*
@@ -62,9 +61,7 @@ import pubg.radar.struct.cmd.GameStateCMD.SafetyZoneRadius
 import pubg.radar.struct.cmd.GameStateCMD.TotalWarningDuration
 import pubg.radar.struct.cmd.PlayerStateCMD.attacks
 import pubg.radar.struct.cmd.PlayerStateCMD.playerNames
-import pubg.radar.struct.cmd.PlayerStateCMD.playerNumKills
 import pubg.radar.struct.cmd.PlayerStateCMD.selfID
-import pubg.radar.struct.cmd.PlayerStateCMD.teamNumbers
 import pubg.radar.util.tuple4
 import wumo.pubg.struct.cmd.TeamCMD.team
 import java.util.*
@@ -99,7 +96,7 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
     }
 
     override fun onGameOver() {
-        camera.zoom = 1 / 4f
+        camera.zoom = 2 / 4f
 
         aimStartTime.clear()
         attackLineStartTime.clear()
@@ -108,10 +105,12 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
 
     fun show() {
         val config = Lwjgl3ApplicationConfiguration()
-        config.setTitle("[${targetAddr.hostAddress} ${sniffOption.name}] - PUBG Radar")
+        config.setTitle("")
         config.useOpenGL3(false, 3, 2)
         config.setWindowedMode(800, 800)
         config.setResizable(true)
+        config.useVsync(false)
+        config.setIdleFPS(120)
         config.setBackBufferConfig(8, 8, 8, 8, 16, 0, 8)
         Lwjgl3Application(this, config)
     }
@@ -202,10 +201,13 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
 
     override fun keyDown(keycode: Int): Boolean {
         when (keycode) {
-            NUM_1 -> filterWeapon = filterWeapon * -1
-            NUM_2 -> filterAttach = filterAttach * -1
-            NUM_3 -> filterLvl2 = filterLvl2 * -1
-            NUM_4 -> filterScope = filterScope * -1
+            NUMPAD_1 -> filterWeapon = filterWeapon * -1
+            NUMPAD_2 -> filterAttach = filterAttach * -1
+            NUMPAD_3 -> filterLvl2 = filterLvl2 * -1
+            NUMPAD_4 -> filterScope = filterScope * -1
+            NUMPAD_7 -> camera.zoom = 1 / 8f
+            NUMPAD_8 -> camera.zoom = 1 / 12f
+            NUMPAD_9 -> camera.zoom = 1 / 24f
         }
         return false
     }
@@ -222,7 +224,7 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
     }
 
     override fun touchUp(screenX: Int, screenY: Int, pointer: Int, button: Int): Boolean {
-        if (button == LEFT) {
+        if (button.equals(LEFT)) {
             dragging = false
             return true
         }
@@ -424,7 +426,6 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
             littleFont.draw(spriteBatch, "$time", x, windowHeight - y)
             safeZoneHint()
             drawPlayerInfos(typeLocation[Player])
-            val profileText = "Weapon: ${filterWeapon}"
         }
 
 
@@ -437,25 +438,25 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
         AttachToFilter = if (filterAttach != 1) {
             arrayListOf("")
         } else {
-            arrayListOf("AR.Stock","S.Loops","CheekPad","A.Grip","V.Grip","U.Ext","AR.Ext","S.Ext","U.ExtQ","AR.ExtQ","S.ExtQ","Choke","AR.Comp","FH","U.Supp","AR.Supp","S.Supp")
+            arrayListOf("AR.Stock", "S.Loops", "CheekPad", "A.Grip", "V.Grip", "U.Ext", "AR.Ext", "S.Ext", "U.ExtQ", "AR.ExtQ", "S.ExtQ", "Choke", "AR.Comp", "FH", "U.Supp", "AR.Supp", "S.Supp")
         }
 
 
         WeaponsToFilter = if (filterWeapon != 1) {
             arrayListOf("")
         } else {
-            arrayListOf("M4","98k","Scar","Ak","Sks","Grenade","Mini","DP28","Ump","Vector","Pan")
+            arrayListOf("M4", "98k", "Scar", "Ak", "Sks", "Grenade", "Mini", "DP28", "Ump", "Vector", "Pan")
         }
 
 
         Level2Filter = if (filterLvl2 != 1) {
             arrayListOf("")
         } else {
-            arrayListOf("Bag2","Arm2","Helm2")
+            arrayListOf("Bag2", "Arm2", "Helm2")
         }
 
 
-        val iconScale = 1.5f / camera.zoom
+        val iconScale = 2f / camera.zoom
         paint(itemCamera.combined) {
             droppedItemLocation.values.asSequence().filter { it.second.isNotEmpty() }
                     .forEach {
@@ -468,24 +469,27 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
                         // println(items)
                         items.forEach {
                             if (it !in WeaponsToFilter) {
-                                if (it !in ScopesToFilter){
-                                    if (it !in AttachToFilter){
-                                        if (it !in Level2Filter){
-                                if (
-                                        iconScale > 8 &&
-                                        sx > 0 && sx < windowWidth &&
-                                        syFix > 0 && syFix < windowHeight
-                                ) {
-                                    iconImages.setIcon(it)
-                                    draw(
-                                            iconImages.icon,
-                                            sx - iconScale / 2, syFix + iconScale / 2, iconScale, iconScale
-                                    )
-                                } else {
-                                    // itemFont.draw(spriteBatch, it, sx, windowHeight - sy - yOffset)
+                                if (it !in ScopesToFilter) {
+                                    if (it !in AttachToFilter) {
+                                        if (it !in Level2Filter) {
+                                            if (
+                                                    iconScale > 8 &&
+                                                    sx > 0 && sx < windowWidth &&
+                                                    syFix > 0 && syFix < windowHeight
+                                            ) {
+                                                iconImages.setIcon(it)
+                                                draw(
+                                                        iconImages.icon,
+                                                        sx - iconScale / 2, syFix + iconScale / 2, iconScale, iconScale
+                                                )
+                                            } else {
+                                                // itemFont.draw(spriteBatch, it, sx, windowHeight - sy - yOffset)
+                                            }
+                                            // yOffset = yOffset + 2
+                                        }
+                                    }
                                 }
-                                // yOffset = yOffset + 2
-                            }}}}
+                            }
                         }
                     }
             //Draw Corpse Icon
@@ -654,20 +658,12 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
             actor!!
             val playerStateGUID = actorWithPlayerState[actor.netGUID] ?: return@forEach
             val name = playerNames[playerStateGUID] ?: return@forEach
-            val teamNumber = teamNumbers[playerStateGUID] ?: 0
-            val numKills = playerNumKills[playerStateGUID] ?: 0
             val (sx, sy) = Vector2(x, y).mapToWindow()
             query(name)
-            if (completedPlayerInfo.containsKey(name)) {
-                val info = completedPlayerInfo[name]!!
-                val desc = "$name" /*($numKills)\n" + */
-                nameFont.draw(spriteBatch, desc, sx + 2, windowHeight - sy - 2)
-            } else nameFont.draw(spriteBatch, "$name "/* +
+            nameFont.draw(spriteBatch, "$name "/* +
                     "/($numKills)\n$teamNumber*/
                     , sx + 2, windowHeight - sy - 2)
         }
-        val profileText = "${completedPlayerInfo.size}/${completedPlayerInfo.size + pendingPlayerInfo.size}"
-        layout.setText(largeFont, profileText)
     }
 
     private var lastPlayTime = System.currentTimeMillis()
