@@ -72,7 +72,7 @@ import kotlin.math.pow
 
 typealias renderInfo = tuple4<Actor, Float, Float, Float>
 
-fun Float.d(n: Int) = String.format("%.${n}f", this)
+//fun Float.d(n: Int) = String.format("%.${n}f", this)
 class GLMap : InputAdapter(), ApplicationListener, GameListener {
     companion object {
         operator fun Vector3.component1(): Float = x
@@ -131,8 +131,8 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
     private lateinit var itemCamera: OrthographicCamera
     private lateinit var camera: OrthographicCamera
     private lateinit var alarmSound: Sound
-    private lateinit var hub_panel: Texture
-    private lateinit var hub_panel_blank: Texture
+    private lateinit var hubpanel: Texture
+    private lateinit var hubpanelblank: Texture
     private lateinit var hubFont: BitmapFont
     private lateinit var hubFontShadow: BitmapFont
     private lateinit var espFont: BitmapFont
@@ -246,8 +246,8 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
         itemCamera = OrthographicCamera(initialWindowWidth, initialWindowWidth)
         fontCamera = OrthographicCamera(initialWindowWidth, initialWindowWidth)
         alarmSound = Gdx.audio.newSound(Gdx.files.internal("sounds/Alarm.wav"))
-        hub_panel = Texture(Gdx.files.internal("images/hub_panel.png"))
-        hub_panel_blank = Texture(Gdx.files.internal("images/hub_panel_blank.png"))
+        hubpanel = Texture(Gdx.files.internal("images/hub_panel.png"))
+        hubpanelblank = Texture(Gdx.files.internal("images/hub_panel_blank.png"))
         corpseboximage = Texture(Gdx.files.internal("icons/box.png"))
         airdropimage = Texture(Gdx.files.internal("icons/airdrop.png"))
         iconImages = Icons(Texture(Gdx.files.internal("images/item-sprites.png")), 64)
@@ -382,24 +382,24 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
             // NUMBER PANEL
             val numText = "$NumAlivePlayers"
             layout.setText(hubFont, numText)
-            spriteBatch.draw(hub_panel, windowWidth - 130f, windowHeight - 60f)
+            spriteBatch.draw(hubpanel, windowWidth - 130f, windowHeight - 60f)
             hubFontShadow.draw(spriteBatch, "ALIVE", windowWidth - 85f, windowHeight - 29f)
             hubFont.draw(spriteBatch, "$NumAlivePlayers", windowWidth - 110f - layout.width / 2, windowHeight - 29f)
 
             val teamText = "$NumAliveTeams"
             layout.setText(hubFont, teamText)
-            spriteBatch.draw(hub_panel, windowWidth - 260f, windowHeight - 60f)
+            spriteBatch.draw(hubpanel, windowWidth - 260f, windowHeight - 60f)
             hubFontShadow.draw(spriteBatch, "TEAM", windowWidth - 215f, windowHeight - 29f)
             hubFont.draw(spriteBatch, "$NumAliveTeams", windowWidth - 240f - layout.width / 2, windowHeight - 29f)
 
             val timeText = "${TotalWarningDuration.toInt() - ElapsedWarningDuration.toInt()}"
             layout.setText(hubFont, timeText)
-            spriteBatch.draw(hub_panel, windowWidth - 390f, windowHeight - 60f)
+            spriteBatch.draw(hubpanel, windowWidth - 390f, windowHeight - 60f)
             hubFontShadow.draw(spriteBatch, "SECS", windowWidth - 345f, windowHeight - 29f)
             hubFont.draw(spriteBatch, "${TotalWarningDuration.toInt() - ElapsedWarningDuration.toInt()}", windowWidth - 370f - layout.width / 2, windowHeight - 29f)
 
             // ITEM ESP FILTER PANEL
-            spriteBatch.draw(hub_panel_blank, 30f, windowHeight - 60f)
+            spriteBatch.draw(hubpanelblank, 30f, windowHeight - 60f)
 
             if (filterWeapon == 1)
                 espFont.draw(spriteBatch, "WEAPON", 37f, windowHeight - 25f)
@@ -775,8 +775,8 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
                                           width: Float, height: Float) {
 
         val (actor, x, y, dir) = actorInfo
-        val v_x = actor!!.velocity.x
-        val v_y = actor.velocity.y
+        val vx = actor!!.velocity.x
+        val vy = actor.velocity.y
 
         val dirVector = dirUnitVector.cpy().rotate(dir).scl(height / 2)
         color = BLACK
@@ -787,7 +787,7 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
         rectLine(x - dirVector.x, y - dirVector.y,
                 x + dirVector.x, y + dirVector.y, width)
 
-        if (actor.beAttached || v_x * v_x + v_y * v_y > 40) {
+        if (actor.beAttached || vx * vx + vy * vy > 40) {
             color = playerColor
             circle(x, y, playerRadius * camera.zoom, 10)
         }

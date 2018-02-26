@@ -114,7 +114,7 @@ class Item {
                 var c = category
                 for (word in words) {
                     if (word !in c) return null
-                    val sub = c[word]
+                    val sub: Any? = c[word]
                     if (sub is String) return sub
                     c = sub as Map<String, Any>
                 }

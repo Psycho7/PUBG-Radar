@@ -3,7 +3,6 @@ package pubg.radar
 import pubg.radar.sniffer.Sniffer
 import pubg.radar.ui.GLMap
 
-const val gridWidth = 813000f
 const val mapWidth = 819200f
 
 var gameStarted = false

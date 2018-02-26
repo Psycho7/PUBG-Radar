@@ -1,7 +1,6 @@
 package pubg.radar.ui
 
 import com.badlogic.gdx.graphics.Color
-import pubg.radar.gridWidth
 import pubg.radar.mapWidth
 
 const val initialWindowWidth = 1000f
