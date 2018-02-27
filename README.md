@@ -2,6 +2,8 @@
 
 This version runs without the spoofing shit in a VM.
 
+'Fixed' the item locations, still working on it.
+
 ### Key Kinds
 
 You can't filter meds and level 3 gear
@@ -14,6 +16,10 @@ You can't filter meds and level 3 gear
 >NUMPAD_3 -> Filter Level 2
 
 >NUMPAD_4 -> Filter Scopes
+
+>NUMPAD_5 -> Filter Meds
+
+>NUMPAD_6 -> Filter Ammo
 
 #### Zooms:
 >NUMPAD_7 -> Scouting

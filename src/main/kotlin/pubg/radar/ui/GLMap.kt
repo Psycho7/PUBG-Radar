@@ -7,6 +7,8 @@ import com.badlogic.gdx.Input.Keys.NUMPAD_1
 import com.badlogic.gdx.Input.Keys.NUMPAD_2
 import com.badlogic.gdx.Input.Keys.NUMPAD_3
 import com.badlogic.gdx.Input.Keys.NUMPAD_4
+import com.badlogic.gdx.Input.Keys.NUMPAD_5
+import com.badlogic.gdx.Input.Keys.NUMPAD_6
 import com.badlogic.gdx.Input.Keys.NUMPAD_7
 import com.badlogic.gdx.Input.Keys.NUMPAD_8
 import com.badlogic.gdx.Input.Keys.NUMPAD_9
@@ -39,7 +41,6 @@ import pubg.radar.deserializer.channel.ActorChannel.Companion.airDropLocation
 import pubg.radar.deserializer.channel.ActorChannel.Companion.corpseLocation
 import pubg.radar.deserializer.channel.ActorChannel.Companion.droppedItemLocation
 import pubg.radar.deserializer.channel.ActorChannel.Companion.visualActors
-import pubg.radar.util.PlayerProfile.Companion.query
 import pubg.radar.sniffer.Sniffer.Companion.preDirection
 import pubg.radar.sniffer.Sniffer.Companion.preSelfCoords
 import pubg.radar.sniffer.Sniffer.Companion.selfCoords
@@ -62,6 +63,7 @@ import pubg.radar.struct.cmd.GameStateCMD.TotalWarningDuration
 import pubg.radar.struct.cmd.PlayerStateCMD.attacks
 import pubg.radar.struct.cmd.PlayerStateCMD.playerNames
 import pubg.radar.struct.cmd.PlayerStateCMD.selfID
+import pubg.radar.util.PlayerProfile.Companion.query
 import pubg.radar.util.tuple4
 import wumo.pubg.struct.cmd.TeamCMD.team
 import java.util.*
@@ -89,10 +91,12 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
         register(this)
     }
 
+
     override fun onGameStart() {
         preSelfCoords.set(if (isErangel) spawnErangel else spawnDesert)
         selfCoords.set(preSelfCoords)
         preDirection.setZero()
+
     }
 
     override fun onGameOver() {
@@ -114,6 +118,7 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
         config.setBackBufferConfig(8, 8, 8, 8, 16, 0, 8)
         Lwjgl3Application(this, config)
     }
+
 
     private lateinit var spriteBatch: SpriteBatch
     private lateinit var shapeRenderer: ShapeRenderer
@@ -150,19 +155,26 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
     private val aimStartTime = HashMap<NetworkGUID, Long>()
     private val attackLineStartTime = LinkedList<Triple<NetworkGUID, NetworkGUID, Long>>()
     private val pinLocation = Vector2()
-    private var filterWeapon = 1
-    private var filterAttach = -1
+    private var filterWeapon = -1
+    private var filterAttach = 1
     private var filterLvl2 = -1
     private var filterScope = -1
-    private var ScopesToFilter = arrayListOf("")
-    private var WeaponsToFilter = arrayListOf("")
-    private var AttachToFilter = arrayListOf("")
-    private var Level2Filter = arrayListOf("")
+    private var filterHeals = -1
+    private var filterAmmo = -1
+    private var scopesToFilter = arrayListOf("")
+    private var weaponsToFilter = arrayListOf("")
+    private var attachToFilter = arrayListOf("")
+    private var level2Filter = arrayListOf("")
+    private var healsToFilter = arrayListOf("")
+    private var ammoToFilter = arrayListOf("")
     private var dragging = false
     private var prevScreenX = -1f
     private var prevScreenY = -1f
     private var screenOffsetX = 0f
     private var screenOffsetY = 0f
+    private var ayyAmount = 26
+    // 26 Fixes the item locations at full zoom
+    // The problem with item locations is the camera, the locations are correct.
 
     private fun Vector2.windowToMap() =
             Vector2(selfCoords.x + (x - windowWidth / 2.0f) * camera.zoom * windowToMapUnit + screenOffsetX,
@@ -172,10 +184,30 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
             Vector2((x - selfCoords.x - screenOffsetX) / (camera.zoom * windowToMapUnit) + windowWidth / 2.0f,
                     (y - selfCoords.y - screenOffsetY) / (camera.zoom * windowToMapUnit) + windowHeight / 2.0f)
 
+
     override fun scrolled(amount: Int): Boolean {
-        camera.zoom *= 1.1f.pow(amount)
+
+        if (camera.zoom > 0.05f && camera.zoom < 1.05f) {
+            camera.zoom *= 1.05f.pow(amount)
+        } else {
+            if (camera.zoom < 0.05f) {
+                camera.zoom = 0.050001f
+                println("Max Zoom")
+            }
+            if (camera.zoom > 0.90f) {
+                camera.zoom = 0.899991f
+                println("Min Zoom")
+            }
+        }
+
+
+
+
+
+
         return true
     }
+
 
     override fun touchDown(screenX: Int, screenY: Int, pointer: Int, button: Int): Boolean {
         when (button) {
@@ -195,6 +227,7 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
                 screenOffsetX = 0f
                 screenOffsetY = 0f
             }
+
         }
         return false
     }
@@ -205,9 +238,13 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
             NUMPAD_2 -> filterAttach = filterAttach * -1
             NUMPAD_3 -> filterLvl2 = filterLvl2 * -1
             NUMPAD_4 -> filterScope = filterScope * -1
+            NUMPAD_5 -> filterHeals = filterHeals * -1
+            NUMPAD_6 -> filterAmmo = filterAmmo * -1
             NUMPAD_7 -> camera.zoom = 1 / 8f
             NUMPAD_8 -> camera.zoom = 1 / 12f
             NUMPAD_9 -> camera.zoom = 1 / 24f
+
+
         }
         return false
     }
@@ -247,7 +284,7 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
         fontCamera = OrthographicCamera(initialWindowWidth, initialWindowWidth)
         alarmSound = Gdx.audio.newSound(Gdx.files.internal("sounds/Alarm.wav"))
         hubpanel = Texture(Gdx.files.internal("images/hub_panel.png"))
-        hubpanelblank = Texture(Gdx.files.internal("images/hub_panel_blank.png"))
+        hubpanelblank = Texture(Gdx.files.internal("images/hub_panel_blank_long.png"))
         corpseboximage = Texture(Gdx.files.internal("icons/box.png"))
         airdropimage = Texture(Gdx.files.internal("icons/airdrop.png"))
         iconImages = Icons(Texture(Gdx.files.internal("images/item-sprites.png")), 64)
@@ -401,25 +438,37 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
             // ITEM ESP FILTER PANEL
             spriteBatch.draw(hubpanelblank, 30f, windowHeight - 60f)
 
-            if (filterWeapon == 1)
-                espFont.draw(spriteBatch, "WEAPON", 37f, windowHeight - 25f)
+            // This is what you were trying to do
+            if (filterWeapon != 1)
+                espFont.draw(spriteBatch, "WEAPON", 40f, windowHeight - 25f)
             else
-                espFontShadow.draw(spriteBatch, "WEAPON", 37f, windowHeight - 25f)
+                espFontShadow.draw(spriteBatch, "WEAPON", 39f, windowHeight - 25f)
 
-            if (filterAttach == 1)
-                espFont.draw(spriteBatch, "ATTACH", 37f, windowHeight - 42f)
+            if (filterAttach != 1)
+                espFont.draw(spriteBatch, "ATTACH", 40f, windowHeight - 42f)
             else
-                espFontShadow.draw(spriteBatch, "ATTACH", 37f, windowHeight - 42f)
+                espFontShadow.draw(spriteBatch, "ATTACH", 40f, windowHeight - 42f)
 
-            if (filterLvl2 == 1)
-                espFont.draw(spriteBatch, "EQUIP", 92f, windowHeight - 25f)
+            if (filterLvl2 != 1)
+                espFont.draw(spriteBatch, "EQUIP", 100f, windowHeight - 25f)
             else
-                espFontShadow.draw(spriteBatch, "EQUIP", 92f, windowHeight - 25f)
+                espFontShadow.draw(spriteBatch, "EQUIP", 100f, windowHeight - 25f)
 
-            if (filterScope == 1)
-                espFont.draw(spriteBatch, "SCOPE", 92f, windowHeight - 42f)
+            if (filterScope != 1)
+                espFont.draw(spriteBatch, "SCOPE", 98f, windowHeight - 42f)
             else
-                espFontShadow.draw(spriteBatch, "SCOPE", 92f, windowHeight - 42f)
+                espFontShadow.draw(spriteBatch, "SCOPE", 98f, windowHeight - 42f)
+
+            if (filterHeals != 1)
+                espFont.draw(spriteBatch, "HEALS", 150f, windowHeight - 25f)
+            else
+                espFontShadow.draw(spriteBatch, "HEALS", 150f, windowHeight - 25f)
+
+            if (filterAmmo != 1)
+                espFont.draw(spriteBatch, "AMMO", 150f, windowHeight - 42f)
+            else
+                espFontShadow.draw(spriteBatch, "AMMO", 150f, windowHeight - 42f)
+
 
             val time = (pinLocation.cpy().sub(selfX, selfY).len() / runSpeed).toInt()
             val (x, y) = pinLocation.mapToWindow()
@@ -428,68 +477,90 @@ class GLMap : InputAdapter(), ApplicationListener, GameListener {
             drawPlayerInfos(typeLocation[Player])
         }
 
-
-        ScopesToFilter = if (filterScope != 1) {
+        // This makes the array empty if the filter is off for performance with an inverted function since arrays are expensive
+        scopesToFilter = if (filterScope != 1) {
             arrayListOf("")
         } else {
             arrayListOf("red-dot", "2x", "8x", "4x", "holo", "DotSight")
         }
 
-        AttachToFilter = if (filterAttach != 1) {
+
+        attachToFilter = if (filterAttach != 1) {
             arrayListOf("")
         } else {
             arrayListOf("AR.Stock", "S.Loops", "CheekPad", "A.Grip", "V.Grip", "U.Ext", "AR.Ext", "S.Ext", "U.ExtQ", "AR.ExtQ", "S.ExtQ", "Choke", "AR.Comp", "FH", "U.Supp", "AR.Supp", "S.Supp")
         }
 
 
-        WeaponsToFilter = if (filterWeapon != 1) {
+        weaponsToFilter = if (filterWeapon != 1) {
             arrayListOf("")
         } else {
-            arrayListOf("M4", "98k", "Scar", "Ak", "Sks", "Grenade", "Mini", "DP28", "Ump", "Vector", "Pan")
+            arrayListOf("M16","M4", "98k", "Scar", "Ak", "Sks", "Grenade", "Mini", "DP28", "Ump", "Vector", "Pan")
         }
 
+        healsToFilter = if (filterHeals != 1) {
+            arrayListOf("")
+        } else {
+            arrayListOf("Bandage", "FirstAid", "MedKit", "Drink", "Pain", "Syringe")
+        }
 
-        Level2Filter = if (filterLvl2 != 1) {
+        ammoToFilter = if (filterAmmo != 1) {
+            arrayListOf("")
+        } else {
+            arrayListOf("556", "762", "Grenade", "Molotov", "Smoke", "Flash")
+        }
+
+        level2Filter = if (filterLvl2 != 1) {
             arrayListOf("")
         } else {
             arrayListOf("Bag2", "Arm2", "Helm2")
         }
 
 
+
+        println("$ayyAmount")
         val iconScale = 2f / camera.zoom
         paint(itemCamera.combined) {
             droppedItemLocation.values.asSequence().filter { it.second.isNotEmpty() }
                     .forEach {
                         val (x, y) = it.first
                         val items = it.second
-                        val (sx, sy) = Vector2(x + 16, y - 16).mapToWindow()
-                        val syFix = windowHeight - sy
+                        val (sx, sy) = Vector2(x, y).mapToWindow()
 
-
+                        val syFix = windowHeight - sy - ayyAmount
                         // println(items)
                         items.forEach {
-                            if (it !in WeaponsToFilter) {
-                                if (it !in ScopesToFilter) {
-                                    if (it !in AttachToFilter) {
-                                        if (it !in Level2Filter) {
-                                            if (
-                                                    iconScale > 8 &&
-                                                    sx > 0 && sx < windowWidth &&
-                                                    syFix > 0 && syFix < windowHeight
-                                            ) {
-                                                iconImages.setIcon(it)
-                                                draw(
-                                                        iconImages.icon,
-                                                        sx - iconScale / 2, syFix + iconScale / 2, iconScale, iconScale
-                                                )
-                                            } else {
-                                                // itemFont.draw(spriteBatch, it, sx, windowHeight - sy - yOffset)
-                                            }
-                                            // yOffset = yOffset + 2
-                                        }
-                                    }
-                                }
-                            }
+                                         if (it !in weaponsToFilter) {
+
+                                             if (it !in scopesToFilter) {
+
+                                                 if (it !in attachToFilter) {
+
+                                                     if (it !in level2Filter) {
+
+                                                         if (it !in ammoToFilter) {
+
+                                                             if (it !in healsToFilter) {
+
+                                                             if (
+                                                                     iconScale > 20 &&
+                                                                     sx > 0 && sx < windowWidth &&
+                                                                     syFix > 0 && syFix < windowHeight
+                                                             ) {
+                                                                 iconImages.setIcon(it)
+                                                                 draw(
+                                                                         iconImages.icon,
+                                                                         sx - iconScale / 2,
+                                                                         syFix + iconScale / 2,
+                                                                         iconScale,
+                                                                         iconScale
+                                                                 )
+                                                             }}
+                                                         }
+                                                     }
+                                                 }
+                                             }
+                                         }
                         }
                     }
             //Draw Corpse Icon
