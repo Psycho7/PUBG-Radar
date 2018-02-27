@@ -6,7 +6,7 @@ This version runs without the spoofing shit in a VM.
 
 ### Key Kinds
 
-You can't filter meds and level 3 gear
+You can't level 3 gear
 
 #### Item Filter:
 >NUMPAD_1 -> Filter Weapon
