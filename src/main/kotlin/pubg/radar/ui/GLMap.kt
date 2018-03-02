@@ -422,7 +422,7 @@ class GLMap: InputAdapter(), ApplicationListener, GameListener {
           if (finalColor.a == 0f)
             finalColor.set(
                 when {
-                  "m416" in items || "akm" in items || "scar" in items -> rareWeaponColor
+                  "m416" in items || "ak" in items || "scar" in items -> rareWeaponColor
                   "98k" in items || "mini" in items || "sks" in items -> sniperColor
                   "Suppressor" in items -> suppressorColor
                   "armor3" in items || "helmet3" in items -> rareArmorColor

@@ -54,6 +54,7 @@ class ActorChannel(ChIndex: Int, client: Boolean = true): Channel(ChIndex, CHTYP
     }
     
     val actor = actor!!
+    val netPlayerIndex = bunch.readInt8()
     while (bunch.notEnd()) {
       //header
       val bHasRepLayout = bunch.readBit()

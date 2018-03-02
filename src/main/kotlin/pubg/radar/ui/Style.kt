@@ -18,7 +18,7 @@ const val vehicle6Width = 1600f
 const val directionRadius = 16000f
 const val airDropRadius = 4000f
 const val corpseRadius = 300f
-const val itemRadius = 300f
+const val itemRadius = 500f
 const val visionRadius = mapWidth / 8
 const val fov = 90f
 
